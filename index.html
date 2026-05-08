@@ -72,7 +72,7 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) scale(0.8);
             font-family: 'Syne', sans-serif;
             font-size: 2rem;
             font-weight: 600;
@@ -82,17 +82,12 @@
             white-space: normal;
             word-wrap: break-word;
             max-width: 95%;
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
 
         .intro-message.show {
-            animation: fadeInOut 1.5s ease-in-out forwards;
-        }
-
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-            10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
 
         /* Main container */
@@ -233,10 +228,12 @@
         /* Lyrics container */
         .lyrics-container {
             height: 400px;
-            overflow-y: auto;
+            overflow-y: scroll;
             overflow-x: hidden;
             scroll-behavior: smooth;
             padding: 20px 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
             mask-image: linear-gradient(
                 to bottom,
                 transparent 0%,
@@ -254,16 +251,7 @@
         }
 
         .lyrics-container::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .lyrics-container::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .lyrics-container::-webkit-scrollbar-thumb {
-            background: var(--text-muted);
-            border-radius: 2px;
+            display: none;
         }
 
         .lyric-line {
@@ -275,7 +263,12 @@
             color: var(--text-secondary);
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             cursor: pointer;
-            line-height: 1.6;
+            line-height: 1.4;
+            white-space: nowrap;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .lyric-line:hover {
@@ -284,14 +277,31 @@
 
         .lyric-line.active {
             color: var(--text-primary);
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 600;
             text-shadow: 0 0 30px var(--accent-glow);
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
 
         .lyric-line.past {
             color: var(--text-muted);
+        }
+
+        .lyric-line.music-icon {
+            color: var(--accent);
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+
+        .lyric-line.music-icon.active {
+            color: var(--accent);
+            opacity: 1;
+            animation: pulseIcon 1s ease-in-out infinite;
+        }
+
+        @keyframes pulseIcon {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
         }
 
         /* Audio element hidden */
@@ -469,6 +479,7 @@
             { start: 53, end: 57.2, text: "jotonee, rekhechhii, tomaake koto naa" },
             { start: 57.2, end: 62.2, text: "shohenaa, jaatonaa, ki korii, bolo naaa" },
             { start: 62.7, end: 67, text: "jotonee, rekhechii, tomaake koto naa" },
+            { start: 67, end: 91, text: "♪ ♫ ♪" },
             { start: 91, end: 93.3, text: "e moner e shimanaay" },
             { start: 93.9, end: 95.5, text: "Tumi chhara Kew naai" },
             { start: 96, end: 100, text: "araal hole jeno, more jaaaaaai" },
@@ -498,6 +509,13 @@
 
         const lyricLines = document.querySelectorAll('.lyric-line');
 
+        // Add music-icon class to placeholder lines
+        lyricLines.forEach((line, index) => {
+            if (lyricsData[index].text.includes('♪')) {
+                line.classList.add('music-icon');
+            }
+        });
+
         // Play button click
         playBtn.addEventListener('click', () => {
             playView.classList.add('hidden');
@@ -521,22 +539,27 @@
             requestAnimationFrame(fadeIn);
 
             // After play clicked, show mwehehe and told ya messages
-            // First lyric starts at 17.5s, so messages should extend to ~17s
+            // Based on music timeline:
+            // 0:02 - 0:06: mwehehe (fade in 0.5s, stay 3s, fade out 0.5s)
+            // 0:06 - 0:08: blank/delay
+            // 0:08 - 0:15.5: told ya (fade in 0.5s, stay 6.5s, fade out 0.5s)
             setTimeout(() => {
                 tapMsg.classList.remove('show');
             }, 100);
 
+            // mwehehe: 0:02 fade in, 0:05.5 fade out starts (ends at 0:06)
             setTimeout(() => {
                 msg1.classList.add('show');
-            }, 500);
+            }, 2000);
 
             setTimeout(() => {
                 msg1.classList.remove('show');
-            }, 6000);
+            }, 5500);
 
+            // told ya: 0:08 fade in, 0:15 fade out starts (ends at 0:15.5)
             setTimeout(() => {
                 msg2.classList.add('show');
-            }, 6500);
+            }, 8000);
 
             setTimeout(() => {
                 msg2.classList.remove('show');
@@ -570,7 +593,7 @@
                         lyricLines[index].classList.add('active');
                         lyricLines[index].classList.remove('past');
                         
-                        // Scroll to active lyric
+                        // Auto scroll to active lyric
                         lyricLines[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
                         
                         currentLineIndex = index;
