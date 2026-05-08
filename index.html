@@ -33,6 +33,7 @@
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
+            overflow-y: auto;
         }
 
         /* Animated background */
@@ -78,7 +79,9 @@
             color: var(--text-primary);
             opacity: 0;
             text-align: center;
-            white-space: nowrap;
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 95%;
         }
 
         .intro-message.show {
@@ -110,23 +113,22 @@
         .play-view {
             text-align: center;
             opacity: 0;
-            transform: scale(1);
+            transform: translateY(30px);
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+            position: absolute;
         }
 
         .play-view.visible {
             opacity: 1;
-            animation: slideUpFade 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        @keyframes slideUpFade {
-            0% { opacity: 0; transform: translateY(30px); }
-            100% { opacity: 1; transform: translateY(0); }
+            transform: translateY(0);
+            pointer-events: all;
+            position: relative;
         }
 
         .play-view.hidden {
             opacity: 0;
-            transform: scale(0.8);
+            transform: translateY(-30px);
             pointer-events: none;
             position: absolute;
         }
@@ -228,72 +230,11 @@
             letter-spacing: 0.1em;
         }
 
-        .close-btn {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            border: none;
-            background: rgba(255,255,255,0.05);
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            z-index: 100;
-        }
-
-        .close-btn:hover {
-            background: rgba(255,255,255,0.1);
-            transform: rotate(90deg);
-        }
-
-        .close-btn svg {
-            width: 20px;
-            height: 20px;
-            stroke: var(--text-secondary);
-            stroke-width: 2;
-        }
-
-        /* Progress bar */
-        .progress-container {
-            width: 100%;
-            margin-bottom: 40px;
-            padding: 0 20px;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 2px;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--gradient-1);
-            border-radius: 2px;
-            width: 0%;
-            transition: width 0.1s linear;
-        }
-
-        .time-display {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            font-variant-numeric: tabular-nums;
-        }
-
         /* Lyrics container */
         .lyrics-container {
             height: 400px;
             overflow-y: auto;
+            overflow-x: hidden;
             scroll-behavior: smooth;
             padding: 20px 0;
             mask-image: linear-gradient(
@@ -397,9 +338,29 @@
         }
 
         /* Responsive */
+        /* Tablet */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 30px 15px;
+            }
+            
+            .lyrics-view {
+                max-width: 500px;
+            }
+            
+            .lyrics-container {
+                height: 350px;
+            }
+        }
+
+        /* Mobile */
         @media (max-width: 600px) {
-            .song-title {
-                font-size: 2.5rem;
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .intro-message {
+                font-size: 1.5rem;
             }
             
             .play-btn {
@@ -412,12 +373,26 @@
                 height: 32px;
             }
             
+            .lyrics-view {
+                max-width: 100%;
+                padding: 0 10px;
+            }
+            
+            .lyrics-container {
+                height: 300px;
+            }
+            
             .lyric-line {
-                font-size: 1.2rem;
+                font-size: 1.1rem;
+                padding: 12px 15px;
             }
             
             .lyric-line.active {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
+            }
+            
+            .lyrics-title {
+                font-size: 1.6rem;
             }
         }
     </style>
@@ -434,9 +409,10 @@
     </div>
 
     <div class="container">
+        <div class="intro-message" id="tapMsg">tap the play button :D</div>
+        
         <div class="intro-message" id="msg1">mwehehehehe</div>
         <div class="intro-message" id="msg2">told ya, i'll make a website for you :3</div>
-        <div class="intro-message" id="msg3">tap the play button :D</div>
         
         <div class="play-view" id="playView">
             <button class="play-btn" id="playBtn" aria-label="Play">
@@ -447,24 +423,8 @@
         </div>
 
         <div class="lyrics-view" id="lyricsView">
-            <button class="close-btn" id="closeBtn" aria-label="Close">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M18 6L6 18M6 6l12 12"/>
-                </svg>
-            </button>
-            
             <div class="lyrics-header">
                 <h2 class="lyrics-title">Lyrics</h2>
-            </div>
-            
-            <div class="progress-container">
-                <div class="progress-bar" id="progressBar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="time-display">
-                    <span id="currentTime">0:00</span>
-                    <span id="duration">0:00</span>
-                </div>
             </div>
             
             <div class="lyrics-container" id="lyricsContainer">
@@ -474,20 +434,27 @@
 
     <audio id="audioPlayer" src="shohena-jatona.mp3"></audio>
 
-    <script>
+<script>
+        const tapMsg = document.getElementById('tapMsg');
         const msg1 = document.getElementById('msg1');
         const msg2 = document.getElementById('msg2');
-        const msg3 = document.getElementById('msg3');
         const playView = document.getElementById('playView');
+        const lyricsView = document.getElementById('lyricsView');
+        const musicNotes = document.getElementById('musicNotes');
+        const playBtn = document.getElementById('playBtn');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const lyricsContainer = document.getElementById('lyricsContainer');
 
-        function runIntroSequence() {
-            setTimeout(() => msg1.classList.add('show'), 500);
-            setTimeout(() => msg2.classList.add('show'), 2500);
-            setTimeout(() => msg3.classList.add('show'), 5000);
-            setTimeout(() => playView.classList.add('visible'), 7500);
+        function showTapMessage() {
+            tapMsg.classList.add('show');
+            setTimeout(() => {
+                playView.classList.add('visible');
+            }, 1500);
         }
 
-        runIntroSequence();
+        showTapMessage();
+
+        let lyricsOpened = false;
 
         const lyricsData = [
             { start: 17.5, end: 20.5, text: "Tumi ki janonaaa" },
@@ -514,17 +481,6 @@
             { start: 125, end: 129.5, text: "jotonee, rekhechhii, tomaake koto naa" }
         ];
 
-        const lyricsView = document.getElementById('lyricsView');
-        const playBtn = document.getElementById('playBtn');
-        const closeBtn = document.getElementById('closeBtn');
-        const audioPlayer = document.getElementById('audioPlayer');
-        const lyricsContainer = document.getElementById('lyricsContainer');
-        const progressFill = document.getElementById('progressFill');
-        const progressBar = document.getElementById('progressBar');
-        const currentTimeEl = document.getElementById('currentTime');
-        const durationEl = document.getElementById('duration');
-        const musicNotes = document.getElementById('musicNotes');
-
         let isPlaying = false;
         let currentLineIndex = -1;
 
@@ -545,35 +501,60 @@
         // Play button click
         playBtn.addEventListener('click', () => {
             playView.classList.add('hidden');
-            lyricsView.classList.add('active');
-            musicNotes.classList.add('active');
+            audioPlayer.volume = 0;
             audioPlayer.play();
             isPlaying = true;
             playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>';
-        });
 
-        // Close button click
-        closeBtn.addEventListener('click', () => {
-            playView.classList.remove('hidden');
-            lyricsView.classList.remove('active');
-            musicNotes.classList.remove('active');
-            audioPlayer.pause();
-            isPlaying = false;
-            playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+            // Fade in music from 0% to 100% over 2 seconds
+            let startTime = null;
+            const fadeDuration = 2000;
+            function fadeIn(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+                const progress = Math.min(elapsed / fadeDuration, 1);
+                audioPlayer.volume = progress;
+                if (progress < 1) {
+                    requestAnimationFrame(fadeIn);
+                }
+            }
+            requestAnimationFrame(fadeIn);
+
+            // After play clicked, show mwehehe and told ya messages
+            // First lyric starts at 17.5s, so messages should extend to ~17s
+            setTimeout(() => {
+                tapMsg.classList.remove('show');
+            }, 100);
+
+            setTimeout(() => {
+                msg1.classList.add('show');
+            }, 500);
+
+            setTimeout(() => {
+                msg1.classList.remove('show');
+            }, 6000);
+
+            setTimeout(() => {
+                msg2.classList.add('show');
+            }, 6500);
+
+            setTimeout(() => {
+                msg2.classList.remove('show');
+            }, 15000);
+
+            // Open lyrics at ~16s (before first lyric at 17.5s)
+            setTimeout(() => {
+                if (!lyricsOpened) {
+                    lyricsOpened = true;
+                    lyricsView.classList.add('active');
+                    musicNotes.classList.add('active');
+                }
+            }, 16000);
         });
 
         // Time update
         audioPlayer.addEventListener('timeupdate', () => {
             const currentTime = audioPlayer.currentTime;
-            const duration = audioPlayer.duration;
-            
-            // Update progress
-            const progress = (currentTime / duration) * 100;
-            progressFill.style.width = progress + '%';
-            
-            // Update time display
-            currentTimeEl.textContent = formatTime(currentTime);
-            durationEl.textContent = formatTime(duration);
 
             // Update active lyric
             lyricsData.forEach((line, index) => {
@@ -598,13 +579,6 @@
             });
         });
 
-        // Progress bar click
-        progressBar.addEventListener('click', (e) => {
-            const rect = progressBar.getBoundingClientRect();
-            const percent = (e.clientX - rect.left) / rect.width;
-            audioPlayer.currentTime = percent * audioPlayer.duration;
-        });
-
         // Audio ended
         audioPlayer.addEventListener('ended', () => {
             playView.classList.remove('hidden');
@@ -617,13 +591,6 @@
                 line.classList.remove('active', 'past');
             });
         });
-
-        function formatTime(seconds) {
-            if (isNaN(seconds)) return '0:00';
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return mins + ':' + (secs < 10 ? '0' : '') + secs;
-        }
     </script>
 </body>
 </html>
