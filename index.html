@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shohena Jatona - Lyrics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-card: #1a1a1a;
+            --accent: #e63946;
+            --accent-glow: rgba(230, 57, 70, 0.4);
+            --text-primary: #f8f8f8;
+            --text-secondary: #8a8a8a;
+            --text-muted: #4a4a4a;
+            --gradient-1: linear-gradient(135deg, #e63946 0%, #ff6b6b 100%);
+            --gradient-2: linear-gradient(180deg, transparent 0%, rgba(230, 57, 70, 0.1) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(230, 57, 70, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(255, 107, 107, 0.05) 0%, transparent 50%);
+            animation: bgPulse 15s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(2%, 2%) rotate(1deg); }
+            66% { transform: translate(-1%, 1%) rotate(-1deg); }
+        }
+
+        /* Intro messages */
+        .intro-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            opacity: 0;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .intro-message.show {
+            animation: fadeInOut 1.5s ease-in-out forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+        /* Main container */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Initial state - Play button */
+        .play-view {
+            text-align: center;
+            opacity: 0;
+            transform: scale(1);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .play-view.visible {
+            opacity: 1;
+            animation: slideUpFade 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .play-view.hidden {
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+            position: absolute;
+        }
+
+        .song-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .play-btn {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background: var(--gradient-1);
+            cursor: pointer;
+            box-shadow: 
+                0 0 60px var(--accent-glow),
+                0 20px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .play-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 
+                0 0 80px var(--accent-glow),
+                0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .play-btn:hover::before {
+            transform: translateX(100%);
+        }
+
+        .play-btn svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+            transition: transform 0.3s;
+        }
+
+        .play-btn:hover svg {
+            transform: scale(1.2);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Lyrics view */
+        .lyrics-view {
+            width: 100%;
+            max-width: 600px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+            position: absolute;
+        }
+
+        .lyrics-view.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+            position: relative;
+        }
+
+        .lyrics-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .lyrics-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+        }
+
+        .close-btn {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border: none;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.1);
+            transform: rotate(90deg);
+        }
+
+        .close-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--text-secondary);
+            stroke-width: 2;
+        }
+
+        /* Progress bar */
+        .progress-container {
+            width: 100%;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-1);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Lyrics container */
+        .lyrics-container {
+            height: 400px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            padding: 20px 0;
+            mask-image: linear-gradient(
+                to bottom,
+                transparent 0%,
+                black 15%,
+                black 85%,
+                transparent 100%
+            );
+            -webkit-mask-image: linear-gradient(
+                to bottom,
+                transparent 0%,
+                black 15%,
+                black 85%,
+                transparent 100%
+            );
+        }
+
+        .lyrics-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .lyrics-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .lyrics-container::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 2px;
+        }
+
+        .lyric-line {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            font-weight: 400;
+            text-align: center;
+            padding: 16px 20px;
+            color: var(--text-secondary);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            line-height: 1.6;
+        }
+
+        .lyric-line:hover {
+            color: var(--text-primary);
+        }
+
+        .lyric-line.active {
+            color: var(--text-primary);
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-shadow: 0 0 30px var(--accent-glow);
+            transform: scale(1.05);
+        }
+
+        .lyric-line.past {
+            color: var(--text-muted);
+        }
+
+        /* Audio element hidden */
+        audio {
+            display: none;
+        }
+
+        /* Floating music notes */
+        .music-notes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .music-notes.active {
+            opacity: 1;
+        }
+
+        .note {
+            position: absolute;
+            font-size: 24px;
+            color: var(--accent);
+            animation: floatNote 8s ease-in-out infinite;
+            opacity: 0;
+        }
+
+        @keyframes floatNote {
+            0% { 
+                transform: translateY(100vh) rotate(0deg); 
+                opacity: 0;
+            }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { 
+                transform: translateY(-20vh) rotate(360deg); 
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .song-title {
+                font-size: 2.5rem;
+            }
+            
+            .play-btn {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .play-btn svg {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .lyric-line {
+                font-size: 1.2rem;
+            }
+            
+            .lyric-line.active {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <div class="music-notes" id="musicNotes">
+        <span class="note" style="left: 10%; animation-delay: 0s;">♪</span>
+        <span class="note" style="left: 30%; animation-delay: 2s;">♫</span>
+        <span class="note" style="left: 50%; animation-delay: 4s;">♪</span>
+        <span class="note" style="left: 70%; animation-delay: 1s;">♫</span>
+        <span class="note" style="left: 90%; animation-delay: 3s;">♪</span>
+    </div>
+
+    <div class="container">
+        <div class="intro-message" id="msg1">mwehehehehe</div>
+        <div class="intro-message" id="msg2">told ya, i'll make a website for you :3</div>
+        <div class="intro-message" id="msg3">tap the play button :D</div>
+        
+        <div class="play-view" id="playView">
+            <button class="play-btn" id="playBtn" aria-label="Play">
+                <svg viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="lyrics-view" id="lyricsView">
+            <button class="close-btn" id="closeBtn" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+            
+            <div class="lyrics-header">
+                <h2 class="lyrics-title">Lyrics</h2>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="time-display">
+                    <span id="currentTime">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+            </div>
+            
+            <div class="lyrics-container" id="lyricsContainer">
+                </div>
+        </div>
+    </div>
+
+    <audio id="audioPlayer" src="shohena-jatona.mp3"></audio>
+
+    <script>
+        const msg1 = document.getElementById('msg1');
+        const msg2 = document.getElementById('msg2');
+        const msg3 = document.getElementById('msg3');
+        const playView = document.getElementById('playView');
+
+        function runIntroSequence() {
+            setTimeout(() => msg1.classList.add('show'), 500);
+            setTimeout(() => msg2.classList.add('show'), 2500);
+            setTimeout(() => msg3.classList.add('show'), 5000);
+            setTimeout(() => playView.classList.add('visible'), 7500);
+        }
+
+        runIntroSequence();
+
+        const lyricsData = [
+            { start: 17.5, end: 20.5, text: "Tumi ki janonaaa" },
+            { start: 21, end: 22.5, text: "Tumi ki bojhonaaa" },
+            { start: 22.7, end: 27.8, text: "tomar e bihone e mooooon joleee" },
+            { start: 28, end: 29.3, text: "Tumi ki janonaaa" },
+            { start: 30.2, end: 32.4, text: "Tumi ki bojhonaaa" },
+            { start: 32.8, end: 37, text: "tomar e Kotha e hridoyyy boleee" },
+            { start: 38, end: 42, text: "Jodi, basho, bhalo amakeee" },
+            { start: 42.5, end: 47.7, text: "tobe, keno, thaako dure dureee" },
+            { start: 48, end: 52.7, text: "shohenaa, jaatonaa, ki korii, bolo naaa" },
+            { start: 53, end: 57.2, text: "jotonee, rekhechhii, tomaake koto naa" },
+            { start: 57.2, end: 62.2, text: "shohenaa, jaatonaa, ki korii, bolo naaa" },
+            { start: 62.7, end: 67, text: "jotonee, rekhechii, tomaake koto naa" },
+            { start: 91, end: 93.3, text: "e moner e shimanaay" },
+            { start: 93.9, end: 95.5, text: "Tumi chhara Kew naai" },
+            { start: 96, end: 100, text: "araal hole jeno, more jaaaaaai" },
+            { start: 101, end: 102.9, text: "e moner e shimanaay" },
+            { start: 103.2, end: 105.4, text: "tumii chhara keww naaiii" },
+            { start: 105.7, end: 109.7, text: "araal hooooole jenooo, moreee jaaaaai" },
+            { start: 110.1, end: 115.2, text: "shohenaa, jaatonaa, ki koriii bolonaaa" },
+            { start: 115.7, end: 119.5, text: "jotonee, rekhechhii, tomaake koto naa" },
+            { start: 120, end: 124.5, text: "shohenaa, jaatonaa, ki koriii bolonaaa" },
+            { start: 125, end: 129.5, text: "jotonee, rekhechhii, tomaake koto naa" }
+        ];
+
+        const lyricsView = document.getElementById('lyricsView');
+        const playBtn = document.getElementById('playBtn');
+        const closeBtn = document.getElementById('closeBtn');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const lyricsContainer = document.getElementById('lyricsContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const musicNotes = document.getElementById('musicNotes');
+
+        let isPlaying = false;
+        let currentLineIndex = -1;
+
+        // Render lyrics
+        lyricsData.forEach((line, index) => {
+            const div = document.createElement('div');
+            div.className = 'lyric-line';
+            div.textContent = line.text;
+            div.dataset.index = index;
+            div.addEventListener('click', () => {
+                audioPlayer.currentTime = line.start;
+            });
+            lyricsContainer.appendChild(div);
+        });
+
+        const lyricLines = document.querySelectorAll('.lyric-line');
+
+        // Play button click
+        playBtn.addEventListener('click', () => {
+            playView.classList.add('hidden');
+            lyricsView.classList.add('active');
+            musicNotes.classList.add('active');
+            audioPlayer.play();
+            isPlaying = true;
+            playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>';
+        });
+
+        // Close button click
+        closeBtn.addEventListener('click', () => {
+            playView.classList.remove('hidden');
+            lyricsView.classList.remove('active');
+            musicNotes.classList.remove('active');
+            audioPlayer.pause();
+            isPlaying = false;
+            playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+        });
+
+        // Time update
+        audioPlayer.addEventListener('timeupdate', () => {
+            const currentTime = audioPlayer.currentTime;
+            const duration = audioPlayer.duration;
+            
+            // Update progress
+            const progress = (currentTime / duration) * 100;
+            progressFill.style.width = progress + '%';
+            
+            // Update time display
+            currentTimeEl.textContent = formatTime(currentTime);
+            durationEl.textContent = formatTime(duration);
+
+            // Update active lyric
+            lyricsData.forEach((line, index) => {
+                if (currentTime >= line.start && currentTime < line.end) {
+                    if (currentLineIndex !== index) {
+                        // Remove active from previous
+                        if (currentLineIndex !== -1) {
+                            lyricLines[currentLineIndex].classList.remove('active');
+                            lyricLines[currentLineIndex].classList.add('past');
+                        }
+                        
+                        // Add active to current
+                        lyricLines[index].classList.add('active');
+                        lyricLines[index].classList.remove('past');
+                        
+                        // Scroll to active lyric
+                        lyricLines[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        currentLineIndex = index;
+                    }
+                }
+            });
+        });
+
+        // Progress bar click
+        progressBar.addEventListener('click', (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audioPlayer.currentTime = percent * audioPlayer.duration;
+        });
+
+        // Audio ended
+        audioPlayer.addEventListener('ended', () => {
+            playView.classList.remove('hidden');
+            lyricsView.classList.remove('active');
+            musicNotes.classList.remove('active');
+            isPlaying = false;
+            playBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+            currentLineIndex = -1;
+            lyricLines.forEach(line => {
+                line.classList.remove('active', 'past');
+            });
+        });
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return mins + ':' + (secs < 10 ? '0' : '') + secs;
+        }
+    </script>
+</body>
+</html>
