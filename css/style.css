@@ -275,10 +275,11 @@ body {
 
 .lyric-line.active {
     color: var(--text-primary);
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 600;
     text-shadow: 0 0 30px var(--accent-glow);
     transform: scale(1.02);
+    transform-origin: center;
 }
 
 .lyric-line.past {
@@ -479,10 +480,13 @@ audio {
     }
     
     .lyric-line {
-        font-size: 1.1rem;
+        font-size: 0.9rem;
+        width: 75%;
+        margin: 0 auto;
     }
     
     .lyrics-title {
-        font-size: 1.6rem;
+        font-size: 1.4rem;
+        width: 50%;
     }
 }
