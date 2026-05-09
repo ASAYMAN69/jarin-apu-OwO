@@ -13,6 +13,24 @@ const catVideo2 = document.getElementById('catVideo2');
 const lyricImg1 = document.getElementById('lyricImg1');
 const lyricImg2 = document.getElementById('lyricImg2');
 
+const imagesToPreload = [
+    'tumi-ki-janona.png',
+    'tumi-ki-bojhona.png',
+    'tomar-e-bihone.png',
+    'tomar-kotha-hridoy.png',
+    'jodi-basho-bhalo.png',
+    'tobe-keno.png',
+    'shohena-jatona.png',
+    'jotone-rekhechhi.png',
+    'e-moner-shimanaay.png',
+    'tumi-chhara-kew-nai.png',
+    'araal-hole-jeno.png'
+];
+imagesToPreload.forEach(src => {
+    const img = new Image();
+    img.src = src;
+});
+
 function showTapMessage() {
     tapMsg.classList.add('show');
     setTimeout(() => {
@@ -148,6 +166,14 @@ let endSequenceTriggered = false;
 audioPlayer.addEventListener('timeupdate', () => {
     const currentTime = audioPlayer.currentTime;
     
+    // Preload video before 67s
+    if (currentTime >= 60 && currentTime < 67) {
+        if (!catVideo1.src) {
+            catVideo1.src = 'cat-scuba-dancing.webm';
+            catVideo2.src = 'cat-scuba-dancing.webm';
+        }
+    }
+    
     // Show cat videos during 67-91 seconds (music icon part)
     if (currentTime >= 67 && currentTime < 91) {
         if (!catVideo1.classList.contains('active')) {
@@ -156,18 +182,113 @@ audioPlayer.addEventListener('timeupdate', () => {
             catVideo1.play();
             catVideo2.play();
         }
-    } else {
+    } 
+    // After 91s - hide video
+    else if (currentTime >= 91) {
         catVideo1.classList.remove('active');
         catVideo2.classList.remove('active');
+        catVideo1.src = '';
+        catVideo2.src = '';
     }
     
-    // Show lyric images during first lyric (17.5 - 20.5s)
-    if (currentTime >= 17.5 && currentTime < 20.5) {
-        lyricImg1.classList.add('active');
-        lyricImg2.classList.add('active');
-    } else {
-        lyricImg1.classList.remove('active');
-        lyricImg2.classList.remove('active');
+    const fadeDuration = 0.3;
+
+    function setLyricImage(line) {
+        const fadeInEnd = line.start + fadeDuration;
+        const fadeOutStart = line.end - fadeDuration;
+        
+        if (currentTime >= line.start && currentTime < fadeInEnd) {
+            const progress = (currentTime - line.start) / fadeDuration;
+            const opacity = Math.min(progress, 1);
+            lyricImg1.style.opacity = opacity;
+            lyricImg2.style.opacity = opacity;
+            lyricImg1.src = line.img;
+            lyricImg2.src = line.img;
+        }
+        else if (currentTime >= fadeInEnd && currentTime < fadeOutStart) {
+            lyricImg1.style.opacity = 1;
+            lyricImg2.style.opacity = 1;
+            lyricImg1.src = line.img;
+            lyricImg2.src = line.img;
+        }
+        else if (currentTime >= fadeOutStart && currentTime < line.end) {
+            const progress = (line.end - currentTime) / fadeDuration;
+            const opacity = Math.min(progress, 1);
+            lyricImg1.style.opacity = opacity;
+            lyricImg2.style.opacity = opacity;
+            lyricImg1.src = line.img;
+            lyricImg2.src = line.img;
+        }
+    }
+
+    const lyricImages = [
+        { start: 17.5, end: 20.5, img: 'tumi-ki-janona.png' },
+        { start: 21, end: 22.5, img: 'tumi-ki-bojhona.png' },
+        { start: 22.7, end: 27.8, img: 'tomar-e-bihone.png' },
+        { start: 28, end: 29.3, img: 'tumi-ki-janona.png' },
+        { start: 30.2, end: 32.4, img: 'tumi-ki-bojhona.png' },
+        { start: 32.8, end: 37, img: 'tomar-kotha-hridoy.png' },
+        { start: 38, end: 42, img: 'jodi-basho-bhalo.png' },
+        { start: 42.5, end: 47.7, img: 'tobe-keno.png' },
+        { start: 48, end: 52.7, img: 'shohena-jatona.png' },
+        { start: 53, end: 57.2, img: 'jotone-rekhechhi.png' },
+        { start: 57.2, end: 62.2, img: 'shohena-jatona.png' },
+        { start: 62.7, end: 67, img: 'jotone-rekhechhi.png' },
+        { start: 91, end: 93.3, img: 'e-moner-shimanaay.png' },
+        { start: 93.9, end: 95.5, img: 'tumi-chhara-kew-nai.png' },
+        { start: 101, end: 102.9, img: 'e-moner-shimanaay.png' },
+        { start: 103.2, end: 105.4, img: 'tumi-chhara-kew-nai.png' },
+        { start: 96, end: 100, img: 'araal-hole-jeno.png' },
+        { start: 105.7, end: 109.7, img: 'araal-hole-jeno.png' },
+        { start: 110.1, end: 115.2, img: 'shohena-jatona.png' },
+        { start: 115.7, end: 119.5, img: 'jotone-rekhechhi.png' },
+        { start: 120, end: 124.5, img: 'shohena-jatona.png' },
+        { start: 125, end: 129.5, img: 'jotone-rekhechhi.png' }
+    ];
+
+    let currentActiveLine = -1;
+    let preloadedNextImg = null;
+    let nextImgElement = null;
+
+    const isMusicSection = currentTime >= 67 && currentTime < 91;
+    
+    if (!isMusicSection) {
+        for (let i = 0; i < lyricImages.length; i++) {
+            if (currentTime >= lyricImages[i].start && currentTime < lyricImages[i].end) {
+                if (currentActiveLine !== i) {
+                    if (currentActiveLine !== -1) {
+                        const prevLine = lyricImages[currentActiveLine];
+                        if (prevLine.end - currentTime > fadeDuration) {
+                            lyricImg1.src = '';
+                            lyricImg2.src = '';
+                        }
+                    }
+
+                    currentActiveLine = i;
+                    lyricImg1.src = lyricImages[i].img;
+                    lyricImg2.src = lyricImages[i].img;
+
+                    if (i + 1 < lyricImages.length) {
+                        const nextImg = lyricImages[i + 1].img;
+                        if (preloadedNextImg !== nextImg) {
+                            preloadedNextImg = nextImg;
+                            if (!nextImgElement) {
+                                nextImgElement = new Image();
+                            }
+                            nextImgElement.src = nextImg;
+                        }
+                    }
+                }
+
+                setLyricImage(lyricImages[i]);
+                break;
+            }
+        }
+    }
+
+    if (currentActiveLine === -1) {
+        lyricImg1.style.opacity = 0;
+        lyricImg2.style.opacity = 0;
     }
     
     // Trigger end sequence when last lyric ends + 1s

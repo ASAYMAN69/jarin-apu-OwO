@@ -350,7 +350,7 @@ audio {
 .lyric-img {
     position: fixed;
     top: 10%;
-    width: 80px;
+    width: 150px;
     height: auto;
     opacity: 0;
     transition: opacity 0.5s ease;
